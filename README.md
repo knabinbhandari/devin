@@ -9,12 +9,26 @@ Items are persisted in a local SQLite database (via `better-sqlite3`) at
 
 ## Getting started
 
+This project targets **Node.js 20** (see `.nvmrc`). If you use `nvm`, run
+`nvm use` first.
+
 ```bash
 npm install
 npm run dev
 ```
 
 Then open [http://localhost:3000](http://localhost:3000).
+
+### Troubleshooting
+
+If the page returns a 500 with an error like `The module '.../better_sqlite3.node'
+was compiled against a different Node.js version` (`ERR_DLOPEN_FAILED`), the native
+`better-sqlite3` binary was built for a different Node.js version than the one
+running the app. Rebuild it against your current Node version:
+
+```bash
+npm rebuild better-sqlite3
+```
 
 ## Notes
 

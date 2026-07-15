@@ -2,9 +2,9 @@
 
 import type { ContentItem } from "@/lib/db";
 
-function formatDate(date: string): string {
-  const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return date;
+function formatDate(value: string): string {
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) return value;
   return parsed.toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
@@ -13,9 +13,10 @@ function formatDate(date: string): string {
 }
 
 export default function ContentList({ items }: { items: ContentItem[] }) {
-  function handleApprove() {
-    // TODO: wire up approval. For now this is intentionally a no-op placeholder.
-    // It should not make an API call or mutate state yet.
+  function handleApprove(id: number) {
+    // TODO: wire up approval for this item.
+    // Intentionally a no-op placeholder for now — no API call, no state change.
+    void id;
   }
 
   if (items.length === 0) {
@@ -42,7 +43,7 @@ export default function ContentList({ items }: { items: ContentItem[] }) {
                 <button
                   type="button"
                   className="approve-btn"
-                  onClick={() => handleApprove()}
+                  onClick={() => handleApprove(item.id)}
                 >
                   Approve
                 </button>

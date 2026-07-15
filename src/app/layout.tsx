@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Content Pipeline Dashboard",
-  description: "Review and approve content ideas",
+  description: "Review and approve video content ideas",
 };
 
 export default function RootLayout({

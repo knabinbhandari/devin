@@ -1,103 +1,108 @@
 import Database from "better-sqlite3";
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
-export type Status = "Needs Review" | "Approved";
+export type ContentStatus = "Needs Review" | "Approved";
 
 export interface ContentItem {
   id: number;
   title: string;
-  status: Status;
+  status: ContentStatus;
   date: string;
 }
 
 const DATA_DIR = path.join(process.cwd(), "data");
-const DB_PATH = path.join(DATA_DIR, "content.db");
+const DB_FILE = path.join(DATA_DIR, "content.db");
 
-const SEED_ITEMS: Array<Omit<ContentItem, "id">> = [
+const SEED_ITEMS: ReadonlyArray<Omit<ContentItem, "id">> = [
   {
-    title: "5 AI tools that actually save you time",
+    title: "How I automated my entire content workflow with AI agents",
     status: "Needs Review",
-    date: "2026-06-24",
+    date: "2026-07-11",
   },
   {
-    title: "I tried the 5am productivity routine for 30 days",
+    title: "The 20-minute morning routine that actually stuck",
     status: "Approved",
-    date: "2026-06-22",
+    date: "2026-07-09",
   },
   {
-    title: "Why your side project keeps failing (and how to fix it)",
+    title: "I rebuilt my startup's landing page in a weekend — here's the result",
     status: "Needs Review",
-    date: "2026-06-20",
+    date: "2026-07-06",
   },
   {
-    title: "Building a SaaS in a weekend: full walkthrough",
+    title: "Notion vs Obsidian: which one survives a real project?",
     status: "Needs Review",
-    date: "2026-06-18",
+    date: "2026-07-03",
   },
   {
-    title: "The truth about remote work nobody talks about",
+    title: "Why most YouTube channels die at 1,000 subscribers",
     status: "Approved",
-    date: "2026-06-15",
+    date: "2026-06-30",
   },
   {
-    title: "How I edit my videos in under an hour",
+    title: "A day in the life of a solo indie developer",
     status: "Needs Review",
-    date: "2026-06-12",
+    date: "2026-06-27",
   },
 ];
 
-let db: Database.Database | null = null;
+let connection: Database.Database | null = null;
 
-function getDb(): Database.Database {
-  if (db) return db;
+function connect(): Database.Database {
+  if (connection) return connection;
 
   fs.mkdirSync(DATA_DIR, { recursive: true });
-  db = new Database(DB_PATH);
+  const db = new Database(DB_FILE);
   db.pragma("journal_mode = WAL");
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS content_items (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
+      id     INTEGER PRIMARY KEY AUTOINCREMENT,
+      title  TEXT NOT NULL,
       status TEXT NOT NULL CHECK (status IN ('Needs Review', 'Approved')),
-      date TEXT NOT NULL
+      date   TEXT NOT NULL
     );
   `);
 
-  const { count } = db
-    .prepare("SELECT COUNT(*) AS count FROM content_items")
-    .get() as { count: number };
-
-  if (count === 0) {
-    const insert = db.prepare(
-      "INSERT INTO content_items (title, status, date) VALUES (@title, @status, @date)"
-    );
-    const insertMany = db.transaction((items: typeof SEED_ITEMS) => {
-      for (const item of items) insert.run(item);
-    });
-    insertMany(SEED_ITEMS);
-  }
-
+  seedIfEmpty(db);
+  connection = db;
   return db;
 }
 
-export function getContentItems(): ContentItem[] {
-  return getDb()
+function seedIfEmpty(db: Database.Database): void {
+  const row = db
+    .prepare("SELECT COUNT(*) AS total FROM content_items")
+    .get() as { total: number };
+
+  if (row.total > 0) return;
+
+  const insert = db.prepare(
+    "INSERT INTO content_items (title, status, date) VALUES (@title, @status, @date)",
+  );
+  const insertAll = db.transaction(
+    (items: ReadonlyArray<Omit<ContentItem, "id">>) => {
+      for (const item of items) insert.run(item);
+    },
+  );
+  insertAll(SEED_ITEMS);
+}
+
+export function listContentItems(): ContentItem[] {
+  return connect()
     .prepare(
-      "SELECT id, title, status, date FROM content_items ORDER BY date DESC, id DESC"
+      "SELECT id, title, status, date FROM content_items ORDER BY date DESC, id DESC",
     )
     .all() as ContentItem[];
 }
 
 export function approveContentItem(id: number): ContentItem | null {
-  const database = getDb();
-  database
-    .prepare("UPDATE content_items SET status = 'Approved' WHERE id = ?")
-    .run(id);
-  return (
-    (database
-      .prepare("SELECT id, title, status, date FROM content_items WHERE id = ?")
-      .get(id) as ContentItem | undefined) ?? null
+  const db = connect();
+  db.prepare("UPDATE content_items SET status = 'Approved' WHERE id = ?").run(
+    id,
   );
+  const item = db
+    .prepare("SELECT id, title, status, date FROM content_items WHERE id = ?")
+    .get(id) as ContentItem | undefined;
+  return item ?? null;
 }

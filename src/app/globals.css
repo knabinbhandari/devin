@@ -1,12 +1,13 @@
 :root {
-  --bg: #0f1115;
-  --card: #1a1d24;
-  --card-border: #262a33;
-  --text: #e6e8ec;
-  --muted: #9aa0ac;
-  --accent: #4f8cff;
+  --bg: #0e1013;
+  --card: #191c22;
+  --card-border: #272b34;
+  --text: #eceef2;
+  --muted: #98a0ad;
+  --accent: #5b8cff;
+  --accent-hover: #4577f0;
   --review: #f5a623;
-  --approved: #34c759;
+  --approved: #35c26b;
 }
 
 * {
@@ -26,7 +27,7 @@ body {
 .page {
   max-width: 760px;
   margin: 0 auto;
-  padding: 48px 24px 80px;
+  padding: 56px 24px 88px;
 }
 
 .header {
@@ -76,6 +77,7 @@ body {
   margin: 0;
   font-size: 16px;
   font-weight: 600;
+  line-height: 1.35;
 }
 
 .card-date {
@@ -105,7 +107,7 @@ body {
 
 .badge-approved {
   color: var(--approved);
-  background: rgba(52, 199, 89, 0.12);
+  background: rgba(53, 194, 107, 0.12);
 }
 
 .approve-btn {
@@ -121,7 +123,7 @@ body {
 }
 
 .approve-btn:hover {
-  background: #3b78f0;
+  background: var(--accent-hover);
 }
 
 .empty {

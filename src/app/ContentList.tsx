@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import type { ContentItem } from "@/lib/db";
 
 function formatDate(date: string): string {
@@ -13,9 +16,22 @@ function formatDate(date: string): string {
 }
 
 export default function ContentList({ items }: { items: ContentItem[] }) {
-  function handleApprove() {
-    // TODO: wire up approval. For now this is intentionally a no-op placeholder.
-    // It should not make an API call or mutate state yet.
+  const router = useRouter();
+  const [pendingId, setPendingId] = useState<number | null>(null);
+
+  async function handleApprove(id: number) {
+    setPendingId(id);
+    try {
+      const res = await fetch(`/api/items/${id}/approve`, { method: "POST" });
+      if (!res.ok) {
+        throw new Error(`Failed to approve item (${res.status})`);
+      }
+      router.refresh();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setPendingId(null);
+    }
   }
 
   if (items.length === 0) {
@@ -26,6 +42,7 @@ export default function ContentList({ items }: { items: ContentItem[] }) {
     <ul className="list">
       {items.map((item) => {
         const needsReview = item.status === "Needs Review";
+        const isPending = pendingId === item.id;
         return (
           <li key={item.id} className="card">
             <div className="card-main">
@@ -42,9 +59,10 @@ export default function ContentList({ items }: { items: ContentItem[] }) {
                 <button
                   type="button"
                   className="approve-btn"
-                  onClick={() => handleApprove()}
+                  onClick={() => handleApprove(item.id)}
+                  disabled={isPending}
                 >
-                  Approve
+                  {isPending ? "Approving…" : "Approve"}
                 </button>
               )}
             </div>

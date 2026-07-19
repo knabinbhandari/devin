@@ -120,8 +120,18 @@ body {
   transition: background 0.15s ease;
 }
 
-.approve-btn:hover {
+.approve-btn:hover:not(:disabled) {
   background: #3b78f0;
+}
+
+.approve-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.error {
+  color: #d70015;
+  margin-bottom: 16px;
 }
 
 .empty {

@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { approveContentItem } from "@/lib/db";
 
-// NOTE: This endpoint exists for future wiring. The Approve button in the UI
-// intentionally does not call it yet (see ContentList.tsx TODO).
 export async function POST(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
